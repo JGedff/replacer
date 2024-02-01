@@ -1,55 +1,55 @@
 const fs = require('fs-extra')
 let directoryCreated = false
-let fileDirSystem = Array()
+const fileDirSystem = []
 let globalSelectedPath
 
 const writter = (array, fileSystem, selectedPath) => {
-    if (!directoryCreated) {
-        selectedPath ? globalSelectedPath = selectedPath : globalSelectedPath = './result'
+  if (!directoryCreated) {
+    selectedPath ? globalSelectedPath = selectedPath : globalSelectedPath = './result'
 
-        console.log('The files will be on the folder: ' + globalSelectedPath)
+    console.log('The files will be on the folder: ' + globalSelectedPath)
 
-        getAllDirs(fileSystem)
+    getAllDirs(fileSystem)
 
-        for (let i = 0; i < fileDirSystem.length; i++) {
-            const element = fileDirSystem[i];
-            let path = element[0].split('/')
+    for (let i = 0; i < fileDirSystem.length; i++) {
+      const element = fileDirSystem[i]
+      const path = element[0].split('/')
 
-            path.splice(path.length - 1, 1)
-            fs.mkdirSync(globalSelectedPath + '/' + path.join('/'), { recursive: true })
-        }
-
-        directoryCreated = !directoryCreated
+      path.splice(path.length - 1, 1)
+      fs.mkdirSync(globalSelectedPath + '/' + path.join('/'), { recursive: true })
     }
 
-    if (typeof (array) === 'object') {
-        for (let i = 0; i < array.length; i++) {
-            const element = array[i];
-            
-            if (typeof (element) === 'object') {
-                writter(element, fileSystem[i])
-            } else {
-                fs.writeFileSync(globalSelectedPath + '/' + fileSystem[i], element, { encoding: 'utf8' })
-            }
-        }
-    } else {
-        fs.writeFileSync(globalSelectedPath + '/index.js', array, { encoding: 'utf8' })
+    directoryCreated = !directoryCreated
+  }
+
+  if (typeof (array) === 'object') {
+    for (let i = 0; i < array.length; i++) {
+      const element = array[i]
+
+      if (typeof (element) === 'object') {
+        writter(element, fileSystem[i])
+      } else {
+        fs.writeFileSync(globalSelectedPath + '/' + fileSystem[i], element, { encoding: 'utf8' })
+      }
     }
+  } else {
+    fs.writeFileSync(globalSelectedPath + '/index.js', array, { encoding: 'utf8' })
+  }
 }
 
 const getAllDirs = (fileSystem) => {
-    let found = false
+  let found = false
 
-    fileSystem.forEach(element => {
-        if (typeof (element) === 'object') {
-            found = true
-            getAllDirs(element)
-        }
-    });
-
-    if (!found) {
-        fileDirSystem.push(fileSystem)
+  fileSystem.forEach(element => {
+    if (typeof (element) === 'object') {
+      found = true
+      getAllDirs(element)
     }
+  })
+
+  if (!found) {
+    fileDirSystem.push(fileSystem)
+  }
 }
 
 module.exports.default = writter
