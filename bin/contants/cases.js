@@ -109,3 +109,13 @@ module.exports.arrayOfCJCases = [
   'exports= ',
   'exports='
 ]
+
+module.exports.arrayOfECCases = [
+  /*
+    import a from 'b'
+    import * as a from 'b'
+    import { a } from 'b'
+    import { a as c } from 'b'
+
+  */
+]

@@ -1,9 +1,17 @@
 const fs = require('fs-extra')
-let directoryCreated = false
+
 const fileDirSystem = []
+
+let directoryCreated = false
 let globalSelectedPath
 
 const writter = (array, fileSystem, selectedPath) => {
+  generatePathDirectory(fileSystem, selectedPath)
+
+  writeNewFiles(array, fileSystem)
+}
+
+const generatePathDirectory = (fileSystem, selectedPath) => {
   if (!directoryCreated) {
     selectedPath ? globalSelectedPath = selectedPath : globalSelectedPath = './result'
 
@@ -21,20 +29,6 @@ const writter = (array, fileSystem, selectedPath) => {
 
     directoryCreated = !directoryCreated
   }
-
-  if (typeof (array) === 'object') {
-    for (let i = 0; i < array.length; i++) {
-      const element = array[i]
-
-      if (typeof (element) === 'object') {
-        writter(element, fileSystem[i])
-      } else {
-        fs.writeFileSync(globalSelectedPath + '/' + fileSystem[i], element, { encoding: 'utf8' })
-      }
-    }
-  } else {
-    fs.writeFileSync(globalSelectedPath + '/index.js', array, { encoding: 'utf8' })
-  }
 }
 
 const getAllDirs = (fileSystem) => {
@@ -49,6 +43,22 @@ const getAllDirs = (fileSystem) => {
 
   if (!found) {
     fileDirSystem.push(fileSystem)
+  }
+}
+
+const writeNewFiles = (array, fileSystem) => {
+  if (typeof (array) === 'object') {
+    for (let i = 0; i < array.length; i++) {
+      const element = array[i]
+
+      if (typeof (element) === 'object') {
+        writter(element, fileSystem[i])
+      } else {
+        fs.writeFileSync(globalSelectedPath + '/' + fileSystem[i], element, { encoding: 'utf8' })
+      }
+    }
+  } else {
+    fs.writeFileSync(globalSelectedPath + '/index.js', array, { encoding: 'utf8' })
   }
 }
 

@@ -5,6 +5,9 @@
   "repository": "https://github.com/JGedff/replacer.git",
   "author": "JGedff <jordimarmi1@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
+  },
   "dependencies": {
     "eslint": "^8.0.1",
     "fs-extra": "^11.2.0",
