@@ -112,6 +112,6 @@ module.exports.arrayOfCJCases = [
 
 module.exports.arrayOfECCases = [
   'export default ',
-  'export '
-/*   'import ', */
+  'export ',
+  'import '
 ]

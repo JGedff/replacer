@@ -51,8 +51,7 @@ const replaceECString = (file) => {
         newElement = file.replaceAll('export default ', 'module.exports = ')
       } else if (caseString === 'export {') {
         newElement = replaceExportECObject(newElement, index)
-      }//  else if (caseString === 'export *') { newElement = replaceExportAllECAll(newElement, index) } TO DO: IMPORT, EXPORT * AND EXPORT FROM IMPORT
-      else if (caseString === 'export ') {
+      } else if (caseString === 'export ') {
         newElement = replaceExportECVar(newElement, index)
       } else if (caseString === 'import ') {
         newElement = replaceImportEC(newElement, index)
@@ -66,9 +65,12 @@ const replaceECString = (file) => {
 }
 
 const replaceExportECObject = (newElement, index) => {
-  const newFile = newElement.replace('export {', 'exports = {')
+  const startObject = addWhileNotFound(newElement, '{', index)
+  const endObject = addWhileNotFound(newElement, '{', startObject)
+  const toRemove = newElement.substring(index, endObject + 1)
+  const toAdd = 'exports = ' + newElement.substring(startObject, endObject + 1).replaceAll(' as ', ': ')
 
-  return newFile
+  return newElement.replace(toRemove, toAdd)
 }
 
 const replaceExportECVar = (newElement, index) => {
@@ -81,6 +83,41 @@ const replaceExportECVar = (newElement, index) => {
 
   const toRemove = newElement.substring(index, endVar + 1)
   const toAdd = 'exports.'
+
+  return newElement.replace(toRemove, toAdd)
+}
+
+const replaceImportEC = (newElement, index) => {
+  const startVal = addWhileNotFound(newElement, ' ', index)
+
+  if (newElement.charAt(startVal + 1) === '{') {
+    return replaceImportObject(newElement, index, startVal)
+  } /* else if (newElement.charAt(startVal + 1) === '*') {
+    return replaceImportAll(newElement, index) Esto sería el import * as name from 'path' => const name = require('path')
+  } else {
+    return replaceImportDefault(newElement, index) Esto sería el import value from 'path' => const value = require('path').default e import value, { si } from 'path' => const value = require('path').default\nconst { si } = require('path')
+  } */ else {
+    return newElement.replace('import', 'impert')
+  }
+}
+
+const replaceImportObject = (newElement, index, startObjIndex) => {
+  const endObjIndex = addWhileNotFound(newElement, '}', startObjIndex)
+  let startImport = endObjIndex
+  let endImport
+
+  while (newElement.charAt(startImport) !== "'" && newElement.charAt(startImport) !== '"') {
+    startImport++
+  }
+
+  endImport = startImport + 1
+
+  while (newElement.charAt(endImport) !== "'" && newElement.charAt(endImport) !== '"') {
+    endImport++
+  }
+
+  const toRemove = newElement.substring(index, endImport + 1)
+  const toAdd = 'const ' + newElement.substring(startObjIndex, endObjIndex + 1).replaceAll(' as ', ': ') + ' = require(' + newElement.substring(startImport, endImport + 1) + ')'
 
   return newElement.replace(toRemove, toAdd)
 }

@@ -122,7 +122,7 @@ const replaceExportVariableCJ = (index, file) => {
 
   const toRemove = file.substring(index, constantIndexEnd)
 
-  const toAdd = 'export const ' + file.substring(caseIndexEnd + 1, constantIndexEnd)
+  const toAdd = 'export const ' + file.substring(caseIndexEnd + 1, constantIndexEnd).toAdd.replaceAll(':', ' as ')
 
   return file.replace(toRemove, toAdd)
 }
@@ -212,9 +212,8 @@ const replaceImportVariableCJ = (index, caseString, file) => {
         toAdd = toAdd + '\nexport const ' + definitionSubstring + ' = ' + definitionSubstring
       }
     }
-
-    toAdd = toAdd.replaceAll(': ', ' as ')
   }
+  toAdd = toAdd.replaceAll(':', ' as ')
 
   return file.replace(toRemove, toAdd)
 }
