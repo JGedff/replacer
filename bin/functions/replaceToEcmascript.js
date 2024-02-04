@@ -88,7 +88,7 @@ const replaceExportCJ = (caseString, newString, file, index) => {
       if (value !== '' && value !== '\r\n') {
         if (value.includes(':')) {
           const variable = value.split(':')
-          const varDefinition = variable[0].replaceAll('"', '')
+          const varDefinition = variable[0].replaceAll('"', '').replaceAll("'", '')
           const varValue = variable[1]
 
           toAdd = 'const ' + varDefinition.replaceAll('\r', '').replaceAll('\n', '') + ' = ' + varValue + '\n' + toAdd + varDefinition + ','

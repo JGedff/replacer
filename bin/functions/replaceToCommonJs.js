@@ -68,7 +68,7 @@ const replaceExportECObject = (newElement, index) => {
   const startObject = addWhileNotFound(newElement, '{', index)
   const endObject = addWhileNotFound(newElement, '{', startObject)
   const toRemove = newElement.substring(index, endObject + 1)
-  const toAdd = 'exports = ' + newElement.substring(startObject, endObject + 1).replaceAll(' as ', ': ')
+  const toAdd = 'module.exports = ' + newElement.substring(startObject, endObject + 1).replaceAll(' as ', ': ')
 
   return newElement.replace(toRemove, toAdd)
 }
@@ -92,12 +92,10 @@ const replaceImportEC = (newElement, index) => {
 
   if (newElement.charAt(startVal + 1) === '{') {
     return replaceImportObject(newElement, index, startVal)
-  } /* else if (newElement.charAt(startVal + 1) === '*') {
-    return replaceImportAll(newElement, index) Esto sería el import * as name from 'path' => const name = require('path')
+  } else if (newElement.charAt(startVal + 1) === '*') {
+    return replaceImportAll(newElement, index)
   } else {
-    return replaceImportDefault(newElement, index) Esto sería el import value from 'path' => const value = require('path').default e import value, { si } from 'path' => const value = require('path').default\nconst { si } = require('path')
-  } */ else {
-    return newElement.replace('import', 'impert')
+    return replaceImportDefault(newElement, index)
   }
 }
 
@@ -120,4 +118,66 @@ const replaceImportObject = (newElement, index, startObjIndex) => {
   const toAdd = 'const ' + newElement.substring(startObjIndex, endObjIndex + 1).replaceAll(' as ', ': ') + ' = require(' + newElement.substring(startImport, endImport + 1) + ')'
 
   return newElement.replace(toRemove, toAdd)
+}
+
+const replaceImportAll = (newElement, index) => {
+  const startName = addWhileNotFound(newElement, 's', index) + 1
+  const endName = addWhileNotFound(newElement, ' ', startName + 1)
+
+  let startPath = endName
+
+  while (newElement.charAt(startPath) !== "'" && newElement.charAt(startPath) !== '"') {
+    startPath++
+  }
+
+  let endPath = startPath + 1
+
+  while (newElement.charAt(endPath) !== "'" && newElement.charAt(endPath) !== '"') {
+    endPath++
+  }
+
+  const toRemove = newElement.substring(index, endPath + 1)
+  const toAdd = 'const ' + newElement.substring(startName, endName + 1) + ' = require(' + newElement.substring(startPath, endPath + 1) + ')'
+
+  return newElement.replace(toRemove, toAdd)
+}
+
+const replaceImportDefault = (newElement, index) => {
+  const startVar = addWhileNotFound(newElement, ' ', index)
+  const endVar = addWhileNotFound(newElement, ' ', startVar + 1)
+
+  let startPath = endVar + 1
+  let endPath
+
+  while (newElement.charAt(startPath) !== "'" && newElement.charAt(startPath) !== '"') {
+    startPath++
+  }
+
+  endPath = startPath + 1
+
+  while (newElement.charAt(endPath) !== "'" && newElement.charAt(endPath) !== '"') {
+    endPath++
+  }
+
+  const path = newElement.substring(startPath, endPath + 1)
+
+  if (newElement.substring(startVar, endVar + 1).includes(',')) {
+    return replacetDoubleImport(newElement, index, startVar, path, endPath + 1)
+  }
+
+  const toRemove = newElement.substring(index, endPath + 1)
+  const toAdd = 'const ' + newElement.substring(startVar, endVar + 1) + ' = require(' + path + ')'
+
+  return newElement.replace(toRemove, toAdd)
+}
+
+const replacetDoubleImport = (newElement, index, startVar, path, endPath) => {
+  const endDefault = addWhileNotFound(newElement, ',', startVar)
+  const importDefault = newElement.substring(index, endDefault + 1)
+  const endObject = addWhileNotFound(newElement, '}', endDefault)
+  const importObj = newElement.substring(endDefault + 1, endObject + 1)
+  const addDefault = importDefault.replace(',', ' ') + ' from ' + path + '\nimport ' + importObj + ' from ' + path
+  const toRemove = newElement.substring(index, endPath)
+
+  return newElement.replace(toRemove, addDefault.replaceAll('  ', ' '))
 }
