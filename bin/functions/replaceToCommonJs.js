@@ -47,6 +47,7 @@ const replaceECString = (file) => {
     while (newElement.indexOf(caseString) !== -1) {
       const index = newElement.indexOf(caseString)
 
+      // TO DO: EXPORT value FROM 'path' (edit replaceExportECVar)
       if (caseString === 'export default ') {
         newElement = file.replaceAll('export default ', 'module.exports = ')
       } else if (caseString === 'export {') {
@@ -66,9 +67,50 @@ const replaceECString = (file) => {
 
 const replaceExportECObject = (newElement, index) => {
   const startObject = addWhileNotFound(newElement, '{', index)
-  const endObject = addWhileNotFound(newElement, '{', startObject)
+  const endObject = addWhileNotFound(newElement, '}', startObject)
+
+  if (newElement.charAt(endObject + 2) === 'f') {
+    return replaceExportImportECObject(newElement, index, startObject, endObject)
+  }
+
   const toRemove = newElement.substring(index, endObject + 1)
   const toAdd = 'module.exports = ' + newElement.substring(startObject, endObject + 1).replaceAll(' as ', ': ')
+
+  return newElement.replace(toRemove, toAdd)
+}
+
+const replaceExportImportECObject = (newElement, index, startObject, endObject) => {
+  let startPath = endObject
+
+  while (newElement.charAt(startPath) !== '"' && newElement.charAt(startPath) !== "'") {
+    startPath++
+  }
+
+  let endPath = startPath + 1
+
+  while (newElement.charAt(endPath) !== '"' && newElement.charAt(endPath) !== "'") {
+    endPath++
+  }
+
+  const toRemove = newElement.substring(index, endPath + 1)
+
+  let obj = newElement.substring(startObject, endObject + 1)
+
+  while (obj.includes(' as ')) {
+    const asIndex = obj.indexOf(' as ')
+
+    let indexOldVar = asIndex - 1
+
+    while (obj.charAt(indexOldVar) !== ' ' && obj.charAt(indexOldVar) !== ',' && obj.charAt(indexOldVar) !== '{') {
+      indexOldVar--
+    }
+
+    const oldVar = obj.substring(indexOldVar, asIndex + 4)
+
+    obj = obj.replace(oldVar, ' ')
+  }
+
+  const toAdd = 'import ' + newElement.substring(startObject, endObject + 1) + ' from ' + newElement.substring(startPath, endPath + 1) + '\nexport ' + obj
 
   return newElement.replace(toRemove, toAdd)
 }
