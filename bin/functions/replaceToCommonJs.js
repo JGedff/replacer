@@ -1,7 +1,7 @@
 const { arrayOfECCases } = require('../contants/cases')
 const replacerFunctions = require('./replacer')
 const { fileReader } = require('./reader')
-const { checkECCases } = require('./utils')
+const { checkECCases, addWhileNotFound } = require('./utils')
 
 module.exports.getNewFilesCommonJs = (folderSystem, newFileSystem, moduleType = false) => {
   folderSystem.forEach((element) => {
@@ -45,13 +45,17 @@ const replaceECString = (file) => {
 
   arrayOfECCases.forEach(caseString => {
     while (newElement.indexOf(caseString) !== -1) {
-      console.log(caseString)
+      const index = newElement.indexOf(caseString)
+
       if (caseString === 'export default ') {
         newElement = file.replaceAll('export default ', 'module.exports = ')
-      } else if (caseString === 'export ') {
-
+      } else if (caseString === 'export {') {
+        newElement = replaceExportECObject(newElement, index)
+      }//  else if (caseString === 'export *') { newElement = replaceExportAllECAll(newElement, index) } TO DO: IMPORT, EXPORT * AND EXPORT FROM IMPORT
+      else if (caseString === 'export ') {
+        newElement = replaceExportECVar(newElement, index)
       } else if (caseString === 'import ') {
-
+        newElement = replaceImportEC(newElement, index)
       } else {
         newElement = 'ERROR TRYING TO REPLACE'
       }
@@ -59,4 +63,24 @@ const replaceECString = (file) => {
   })
 
   return newElement
+}
+
+const replaceExportECObject = (newElement, index) => {
+  const newFile = newElement.replace('export {', 'exports = {')
+
+  return newFile
+}
+
+const replaceExportECVar = (newElement, index) => {
+  const startVar = addWhileNotFound(newElement, ' ', index)
+  const endVar = addWhileNotFound(newElement, ' ', startVar + 1)
+
+  if (newElement.substring(index, endVar + 1).includes('{')) {
+    return replaceExportECObject(newElement, index)
+  }
+
+  const toRemove = newElement.substring(index, endVar + 1)
+  const toAdd = 'exports.'
+
+  return newElement.replace(toRemove, toAdd)
 }
