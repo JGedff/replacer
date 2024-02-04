@@ -1,9 +1,9 @@
 const { arrayOfECCases } = require('../contants/cases')
 const replacerFunctions = require('./replacer')
 const { fileReader } = require('./reader')
-const { checkCases } = require('./utils')
+const { checkECCases } = require('./utils')
 
-module.exports.getNewFilesCommonJs = (folderSystem, newFileSystem, moduleType) => {
+module.exports.getNewFilesCommonJs = (folderSystem, newFileSystem, moduleType = false) => {
   folderSystem.forEach((element) => {
     if (typeof (element) === 'object') {
       newFileSystem.push(replacerFunctions.getFilesReplaced(element, moduleType))
@@ -27,12 +27,12 @@ module.exports.getNewFilesCommonJs = (folderSystem, newFileSystem, moduleType) =
 
 module.exports.processToCJFile = (file) => {
   let newElement = file
-  const checkFile = checkCases(file)
+  const checkFile = checkECCases(file)
 
   if (checkFile === 0) {
     newElement = replaceECString(file)
 
-    return this.processToECFile(newElement)
+    return this.processToCJFile(newElement)
   } else if (checkFile === 1) {
     return newElement
   } else {
@@ -45,7 +45,12 @@ const replaceECString = (file) => {
 
   arrayOfECCases.forEach(caseString => {
     while (newElement.indexOf(caseString) !== -1) {
-      if (caseString === 'module.exports.' || caseString === 'exports.') {
+      console.log(caseString)
+      if (caseString === 'export default ') {
+        newElement = file.replaceAll('export default ', 'module.exports = ')
+      } else if (caseString === 'export ') {
+
+      } else if (caseString === 'import ') {
 
       } else {
         newElement = 'ERROR TRYING TO REPLACE'

@@ -1,10 +1,10 @@
 const fs = require('fs-extra')
 
 const { getNewFilesEcmascript, processToECFile } = require('./replaceToEcmascript')
-const { getNewFilesCommonJs } = require('./replaceToCommonJs')
+const { getNewFilesCommonJs, processToCJFile } = require('./replaceToCommonJs')
 const { readDir, fileReader } = require('./reader')
 
-module.exports.replacer = (path, moduleType) => {
+module.exports.replacer = (path, moduleType = false) => {
   let folderSystem
 
   if (fs.lstatSync(path).isDirectory()) {
@@ -16,18 +16,18 @@ module.exports.replacer = (path, moduleType) => {
   } else {
     const fileText = fileReader(path)
 
-    if (moduleType === 'commonjs') {
-      // return processToCJFile(fileText)
+    if (moduleType) {
+      return processToCJFile(fileText)
     } else {
       return processToECFile(fileText)
     }
   }
 }
 
-module.exports.getFilesReplaced = (folderSystem, moduleType = '') => {
+module.exports.getFilesReplaced = (folderSystem, moduleType = false) => {
   const newFileSystem = []
 
-  if (moduleType === 'commonjs') {
+  if (moduleType) {
     getNewFilesCommonJs(folderSystem, newFileSystem, moduleType)
   } else {
     getNewFilesEcmascript(folderSystem, newFileSystem)

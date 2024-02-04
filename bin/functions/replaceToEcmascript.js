@@ -1,4 +1,4 @@
-const { checkCases, addWhileNotFound, checkDefinitionCases, changeEnterToSpace, deleteDefinitionVar } = require('./utils')
+const { checkCJCases, addWhileNotFound, checkDefinitionCases, changeEnterToSpace, deleteDefinitionVar } = require('./utils')
 const { arrayOfCJCases } = require('../contants/cases')
 const replacerFunctions = require('./replacer')
 const { fileReader } = require('./reader')
@@ -27,7 +27,7 @@ module.exports.getNewFilesEcmascript = (folderSystem, newFileSystem) => {
 
 module.exports.processToECFile = (file) => {
   let newElement = file
-  const checkFile = checkCases(file)
+  const checkFile = checkCJCases(file)
 
   if (checkFile === 0) {
     newElement = replaceCJString(file)
