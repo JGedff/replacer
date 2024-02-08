@@ -47,7 +47,6 @@ const replaceECString = (file) => {
     while (newElement.indexOf(caseString) !== -1) {
       const index = newElement.indexOf(caseString)
 
-      // TO DO: EXPORT value FROM 'path' (edit replaceExportECVar)
       if (caseString === 'export default ') {
         newElement = file.replaceAll('export default ', 'module.exports = ')
       } else if (caseString === 'export {') {
@@ -121,10 +120,34 @@ const replaceExportECVar = (newElement, index) => {
 
   if (newElement.substring(index, endVar + 1).includes('{')) {
     return replaceExportECObject(newElement, index)
+  } else if (newElement.substring(index, endVar + 1).includes('*')) {
+    return replaceExportImportAll(newElement, index)
   }
 
   const toRemove = newElement.substring(index, endVar + 1)
   const toAdd = 'exports.'
+
+  return newElement.replace(toRemove, toAdd)
+}
+
+const replaceExportImportAll = (newElement, index) => {
+  const startName = addWhileNotFound(newElement, 's', index) + 1
+  const endName = addWhileNotFound(newElement, ' ', startName + 1)
+
+  let startPath = endName
+
+  while (newElement.charAt(startPath) !== "'" && newElement.charAt(startPath) !== '"') {
+    startPath++
+  }
+
+  let endPath = startPath + 1
+
+  while (newElement.charAt(endPath) !== "'" && newElement.charAt(endPath) !== '"') {
+    endPath++
+  }
+
+  const toRemove = newElement.substring(index, endPath + 1)
+  const toAdd = 'exports.' + newElement.substring(startName, endName + 1).trim() + ' = require(' + newElement.substring(startPath, endPath + 1) + ')'
 
   return newElement.replace(toRemove, toAdd)
 }
