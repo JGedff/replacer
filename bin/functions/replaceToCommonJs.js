@@ -1,7 +1,7 @@
 const { arrayOfECCases } = require('../contants/cases')
 const replacerFunctions = require('./replacer')
 const { fileReader } = require('./reader')
-const { checkECCases, addWhileNotFound } = require('./utils')
+const { checkECCases, addWhileNotFound, replaceDoubleSpaces } = require('./utils')
 
 module.exports.getNewFilesCommonJs = (folderSystem, newFileSystem, moduleType = false) => {
   folderSystem.forEach((element) => {
@@ -10,15 +10,13 @@ module.exports.getNewFilesCommonJs = (folderSystem, newFileSystem, moduleType = 
     } else {
       let fileText
 
-      if (element.includes('.js') || element.includes('.ts') || element.includes('.jsx') || element.includes('.tsx')) {
+      if (element.includes('.js') || element.includes('.jsx')) {
         fileText = this.processToCJFile(fileReader(element))
       } else {
         fileText = fileReader(element)
       }
 
-      while (fileText.includes('  ')) {
-        fileText = fileText.replaceAll('  ', ' ')
-      }
+      fileText = replaceDoubleSpaces(fileText)
 
       newFileSystem.push(fileText)
     }
@@ -49,14 +47,12 @@ const replaceECString = (file) => {
 
       if (caseString === 'export default ') {
         newElement = file.replaceAll('export default ', 'module.exports = ')
-      } else if (caseString === 'export {') {
+      } else if (caseString === 'export {' || newElement.substring(index, index + caseString.length + 1) === 'export {') {
         newElement = replaceExportECObject(newElement, index)
       } else if (caseString === 'export ') {
         newElement = replaceExportECVar(newElement, index)
       } else if (caseString === 'import ') {
         newElement = replaceImportEC(newElement, index)
-      } else {
-        newElement = 'ERROR TRYING TO REPLACE'
       }
     }
   })
@@ -118,9 +114,7 @@ const replaceExportECVar = (newElement, index) => {
   const startVar = addWhileNotFound(newElement, ' ', index)
   const endVar = addWhileNotFound(newElement, ' ', startVar + 1)
 
-  if (newElement.substring(index, endVar + 1).includes('{')) {
-    return replaceExportECObject(newElement, index)
-  } else if (newElement.substring(index, endVar + 1).includes('*')) {
+  if (newElement.substring(index, endVar + 1).includes('*')) {
     return replaceExportImportAll(newElement, index)
   }
 

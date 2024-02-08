@@ -1,4 +1,4 @@
-const { checkCJCases, addWhileNotFound, checkDefinitionCases, changeEnterToSpace, deleteDefinitionVar } = require('./utils')
+const { checkCJCases, addWhileNotFound, checkDefinitionCases, changeEnterToSpace, deleteDefinitionVar, replaceDoubleSpaces } = require('./utils')
 const { arrayOfCJCases } = require('../contants/cases')
 const replacerFunctions = require('./replacer')
 const { fileReader } = require('./reader')
@@ -10,15 +10,13 @@ module.exports.getNewFilesEcmascript = (folderSystem, newFileSystem) => {
     } else {
       let fileText
 
-      if (element.includes('.js') || element.includes('.ts') || element.includes('.jsx') || element.includes('.tsx')) {
+      if (element.includes('.js') || element.includes('.jsx')) {
         fileText = this.processToECFile(fileReader(element))
       } else {
         fileText = fileReader(element)
       }
 
-      while (fileText.includes('  ')) {
-        fileText = fileText.replaceAll('  ', ' ')
-      }
+      fileText = replaceDoubleSpaces(fileText)
 
       newFileSystem.push(fileText)
     }

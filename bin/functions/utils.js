@@ -88,3 +88,13 @@ module.exports.checkDefinitionCases = (substring) => {
 
   return found
 }
+
+module.exports.replaceDoubleSpaces = (file) => {
+  let fileText = file
+
+  while (fileText.includes('  ')) {
+    fileText = fileText.replaceAll('  ', ' ')
+  }
+
+  return fileText
+}

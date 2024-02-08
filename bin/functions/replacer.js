@@ -3,6 +3,7 @@ const fs = require('fs-extra')
 const { getNewFilesEcmascript, processToECFile } = require('./replaceToEcmascript')
 const { getNewFilesCommonJs, processToCJFile } = require('./replaceToCommonJs')
 const { readDir, fileReader } = require('./reader')
+const { replaceDoubleSpaces } = require('./utils')
 
 module.exports.replacer = (path, moduleType = false) => {
   let folderSystem
@@ -15,11 +16,14 @@ module.exports.replacer = (path, moduleType = false) => {
     return newFileSystem
   } else {
     const fileText = fileReader(path)
+    let newFile
 
     if (moduleType) {
-      return processToCJFile(fileText)
+      newFile = processToCJFile(fileText)
+      return replaceDoubleSpaces(newFile)
     } else {
-      return processToECFile(fileText)
+      newFile = processToECFile(fileText)
+      return replaceDoubleSpaces(newFile)
     }
   }
 }
