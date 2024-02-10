@@ -155,7 +155,9 @@ const replaceNamedImportCJ = (file, varDefinition, path, endPath) => {
   varName = file.substring(startVar + 1, endVar)
 
   if (varDefinition.includes('exports')) {
-    return replaceExportNamedImportCJ(file, varDefinition, startVar, path, varName)
+    if (file.charAt(file.indexOf(varDefinition) - 1) === '.') {
+      return replaceExportNamedImportCJ(file, 'module.' + varDefinition.replaceAll('\n', '').replaceAll('\r', ''), path, varName.replaceAll('\n', '').replaceAll('\r', ''))
+    }
   } else if (varDefinition.includes('{')) {
     return replaceObjNamedImportCJ(file, varDefinition, path, varName.replaceAll('\n', '').replaceAll('\r', ''))
   }
@@ -176,26 +178,51 @@ const replaceObjNamedImportCJ = (file, varDefinition, path, varName) => {
   return file.replace(toRemove, toAdd)
 }
 
-const replaceExportNamedImportCJ = (file, varDefinition, startVar, path, varName) => {
-  return file.replace('require', 'req')
+const replaceExportNamedImportCJ = (file, varDefinition, path, varName) => {
+  if (varDefinition.includes('exports.')) {
+    return replaceExportVarNamedImportCJ(file, varDefinition, path, varName)
+  }
+
+  const toRemove = varDefinition + ' = require(' + path + ').' + varName
+  const toAdd = 'import ' + varName + ' from ' + path + '\nexport default ' + varName
+
+  return file.replace(toRemove, toAdd)
+}
+
+const replaceExportVarNamedImportCJ = (file, varDefinition, path, varName) => {
+  const toRemove = varDefinition + ' = require(' + path + ').' + varName
+  const definitionSubstring = varDefinition.replaceAll('module.exports.', '').replaceAll('module.exports', '').replaceAll('exports.', '').replaceAll('exports', '')
+  const toAdd = 'import ' + varName + ' from ' + path + '\nexport const ' + definitionSubstring + ' = ' + varName
+
+  return file.replace(toRemove, toAdd)
 }
 
 const replaceExportImportCJ = (file, varDefinition, path) => {
-  /* let definitionSubstring = varDefinition
-  let toRemove
-  let toAdd
+  const definitionSubstring = varDefinition
 
   if (file.charAt(file.indexOf(definitionSubstring) - 1) === '.') {
-    toRemove = 'module.' + definitionSubstring + ' = require(' + path + ')'
-    toAdd = 'export { default } from ' + path
+    return replaceExportDefaultImportCJ(file, definitionSubstring, path)
   } else if (definitionSubstring.includes('.')) {
-    toRemove = definitionSubstring + ' = require(' + path + ')'
-    definitionSubstring = definitionSubstring.replace('exports', '')
-    toAdd = 'export ' + definitionSubstring + ' from ' + path
-  } else {
-    toRemove = definitionSubstring + 's = require(' + path + ')'
-    toAdd = 'export ' + definitionSubstring + ' from ' + path
-  } */
+    return replaceExportVarInputCJ(file, definitionSubstring, path)
+  }
 
-  return file.replace('require', 'req')
+  const toRemove = definitionSubstring + 's = require(' + path + ')'
+  const toAdd = 'export ' + definitionSubstring + ' from ' + path
+
+  return file.replace(toRemove, toAdd)
+}
+
+const replaceExportDefaultImportCJ = (file, definitionSubstring, path) => {
+  const toRemove = 'module.' + definitionSubstring + ' = require(' + path + ')'
+  const toAdd = 'import defaultValue from ' + path + '\nexport default defaultValue'
+
+  return file.replace(toRemove, toAdd)
+}
+
+const replaceExportVarInputCJ = (file, varDefinition, path) => {
+  const toRemove = varDefinition + ' = require(' + path + ')'
+  const definitionSubstring = varDefinition.replace('exports', '')
+  const toAdd = 'import ' + definitionSubstring + ' from ' + path + '\nexport ' + definitionSubstring
+
+  return file.replace(toRemove, toAdd)
 }

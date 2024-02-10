@@ -13,9 +13,8 @@ const options = yargs.usage('This command will create a new folder that will con
   .option('e', { alias: 'ecmascript', describe: 'Transform from ecmascript to commonjs ', demandOption: false })
   .argv
 
-// REDO COMMONJS TO ECMASCRIPT
 // DO SKIP COMMENTS (option -c)
-// DO SKIP FILES (option -s skipFile => File with name of skip files seperated by new line)
+// DO SKIP PATH (option -s path => Files in the path will be omited)
 // DO TYPESCRIPT (option -t)
 
 yargs.showHelpOnFail()
