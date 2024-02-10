@@ -44,7 +44,6 @@ const replaceECString = (file) => {
   arrayOfECCases.forEach(caseString => {
     while (newElement.indexOf(caseString) !== -1) {
       const index = newElement.indexOf(caseString)
-      const overFlow = newElement
 
       if (caseString === 'export default ') {
         newElement = file.replaceAll('export default ', 'module.exports = ')
@@ -54,11 +53,6 @@ const replaceECString = (file) => {
         newElement = replaceExportECVar(newElement, index)
       } else if (caseString === 'import ') {
         newElement = replaceImportEC(newElement, index)
-      }
-
-      if (overFlow === newElement) {
-        console.error('There was an error while trying to replace a file.\n\nPlease, check the files for cases that will cause errors:\n\n-')
-        break;
       }
     }
   })

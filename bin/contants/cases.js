@@ -86,28 +86,13 @@ module.exports.arrayOfCJWrongCases = [
 ]
 
 module.exports.arrayOfCJCases = [
-  'module.exports = {',
-  'module.exports ={',
-  'module.exports= {',
-  'module.exports={',
-  'module.exports.',
-  'exports = {',
-  'exports ={',
-  'exports= {',
-  'exports={',
-  'exports.',
-  '= require(',
-  ' =require(',
   ' = require(',
-  '=require(',
+  'module.exports.',
+  'exports.',
+  'module.exports = {',
+  'exports = {',
   'module.exports = ',
-  'module.exports =',
-  'module.exports= ',
-  'module.exports=',
-  'exports = ',
-  'exports =',
-  'exports= ',
-  'exports='
+  'exports = '
 ]
 
 module.exports.arrayOfECCases = [

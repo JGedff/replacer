@@ -1,4 +1,4 @@
-const { checkCJCases, addWhileNotFound, checkDefinitionCases, changeEnterToSpace, deleteDefinitionVar, replaceDoubleSpaces } = require('./utils')
+const { checkCJCases, addWhileNotFound, replaceDoubleSpaces, checkDefinitionCases, deleteDefinitionVar } = require('./utils')
 const { arrayOfCJCases } = require('../contants/cases')
 const replacerFunctions = require('./replacer')
 const { fileReader } = require('./reader')
@@ -45,23 +45,16 @@ const replaceCJString = (file) => {
     while (newElement.indexOf(caseString) !== -1) {
       const index = newElement.indexOf(caseString)
 
-      if (caseString === 'module.exports.' || caseString === 'exports.') {
-        newElement = replaceExportVariableCJ(index, newElement)
-      } else if (caseString === ' = require(' || caseString === ' =require(' ||
-                caseString === '= require(' || caseString === '=require(') {
-        newElement = replaceImportVariableCJ(index, caseString, newElement)
-      } else if (caseString === 'module.exports = {' || caseString === 'module.exports ={' ||
-                caseString === 'module.exports= {' || caseString === 'module.exports={' ||
-                caseString === 'exports = {' || caseString === 'exports ={' ||
-                caseString === 'exports= {' || caseString === 'exports={') {
-        newElement = replaceExportCJ(caseString, 'export {', newElement, index)
-      } else if (caseString === 'module.exports = ' || caseString === 'module.exports =' ||
-                caseString === 'module.exports= ' || caseString === 'module.exports=' ||
-                caseString === 'exports = ' || caseString === 'exports =' ||
-                caseString === 'exports= ' || caseString === 'exports=') {
-        newElement = replaceExportCJ(caseString, 'export default ', newElement)
-      } else {
-        newElement = 'ERROR TRYING TO REPLACE'
+      if (caseString.includes('require')) {
+        newElement = replaceImportVariableCJ(index, newElement)
+      } else if (caseString === 'module.exports.' || caseString === 'exports.') {
+        newElement = newElement.replaceAll('module.exports.', 'export const ').replaceAll('exports.', 'export const ')
+      } else if (caseString === 'module.exports = {' || caseString === 'exports = {') {
+        newElement = replaceExportObjCJ(newElement, index)
+      } else if ((caseString === 'module.exports = ' || caseString === 'exports = ') &&
+        !(newElement.substring(index, index + caseString.length + 1) === 'exports = {' ||
+        newElement.substring(index, index + caseString.length + 1) === 'module.exports = {')) {
+        newElement = newElement.replaceAll(caseString, 'export default ')
       }
     }
   })
@@ -69,71 +62,44 @@ const replaceCJString = (file) => {
   return newElement
 }
 
-const replaceExportCJ = (caseString, newString, file, index) => {
-  if (caseString.includes('{')) {
-    const startExport = addWhileNotFound(file, '{', index)
-    const endExport = addWhileNotFound(file, '}', startExport)
+const replaceExportObjCJ = (file, index) => {
+  const startExport = addWhileNotFound(file, '{', index)
+  const endExport = addWhileNotFound(file, '}', startExport)
 
-    let toAdd = newString
+  let toAdd = 'export {\n'
 
-    const toRemove = file.substring(index, endExport + 1)
+  const toRemove = file.substring(index, endExport + 1)
 
-    const exportObject = file.substring(startExport + 1, endExport)
+  const exportObject = file.substring(startExport + 1, endExport)
 
-    const exportValues = exportObject.split(',')
+  const exportValues = exportObject.split(',')
 
-    exportValues.forEach(value => {
-      if (value !== '' && value !== '\r\n') {
-        if (value.includes(':')) {
-          const variable = value.split(':')
-          const varDefinition = variable[0].replaceAll('"', '').replaceAll("'", '')
-          const varValue = variable[1]
+  exportValues.forEach(value => {
+    if (value !== '' && value !== '\r\n') {
+      const newValue = value.replaceAll('"', '').replaceAll("'", '').replaceAll('\r', '').replaceAll('\n', '')
 
-          toAdd = 'const ' + varDefinition.replaceAll('\r', '').replaceAll('\n', '') + ' = ' + varValue + '\n' + toAdd + varDefinition + ','
-        } else {
-          toAdd = toAdd + value + ','
-        }
+      if (newValue.includes(':')) {
+        const variable = newValue.split(':')
+        const varDefinition = variable[0]
+        const varValue = variable[1]
+
+        toAdd = 'const ' + varDefinition + ' = ' + varValue + '\n' + toAdd + varDefinition + ',\n'
+      } else {
+        toAdd = toAdd + newValue + ',\n'
       }
-    })
+    }
+  })
 
-    toAdd = toAdd + '\n}'
+  toAdd = toAdd + '}'
 
-    return file.replaceAll(toRemove, toAdd)
-  } else {
-    return file.replaceAll(caseString, newString)
-  }
+  return file.replaceAll(toRemove, toAdd)
 }
 
-const replaceExportVariableCJ = (index, file) => {
-  let caseIndexEnd = index
-  let constantIndexEnd
-
-  while (file.charAt(caseIndexEnd - 1) !== 's' || file.charAt(caseIndexEnd) !== '.') {
-    caseIndexEnd++
-  }
-
-  constantIndexEnd = caseIndexEnd
-
-  while (file.charAt(constantIndexEnd) !== ' ' && file.charAt(constantIndexEnd) !== '=') {
-    constantIndexEnd++
-  }
-
-  const toRemove = file.substring(index, constantIndexEnd)
-
-  const toAdd = 'export const ' + file.substring(caseIndexEnd + 1, constantIndexEnd).replaceAll(':', ' as ')
-
-  return file.replace(toRemove, toAdd)
-}
-
-const replaceImportVariableCJ = (index, caseString, file) => {
+const replaceImportVariableCJ = (index, file) => {
   let definitionSubstring = ''
   let startPath = index
   let startDefinition = index
-  const endDefinition = index
-  let requireEnd
   let endPath
-  let toRemove
-  let toAdd
 
   while (file.charAt(startPath) !== "'" && file.charAt(startPath) !== '"') {
     startPath++
@@ -145,73 +111,91 @@ const replaceImportVariableCJ = (index, caseString, file) => {
     endPath++
   }
 
-  requireEnd = endPath + 1
-  const path = file.substring(startPath, requireEnd)
-
   while (!checkDefinitionCases(definitionSubstring)) {
-    definitionSubstring = file.substring(startDefinition, endDefinition)
+    definitionSubstring = file.substring(startDefinition, index)
 
     startDefinition--
   }
 
-  requireEnd = addWhileNotFound(file, ')', requireEnd)
+  const path = file.substring(startPath, endPath + 1)
 
-  if (file.charAt(requireEnd + 1) === '.') {
-    let varIndex = requireEnd + 2
-    let varName = ''
-
-    while (file.charAt(varIndex) !== ' ' && file.charAt(varIndex) !== '\n' && file.charAt(varIndex) !== '') {
-      varIndex++
-    }
-
-    varName = file.substring(requireEnd + 2, varIndex)
-
-    toRemove = definitionSubstring + caseString + path + ').' + varName
-
-    varName = changeEnterToSpace(varName)
-
-    if (definitionSubstring.includes('{')) {
-      toAdd = 'import ' + varName + ' from ' + path + '\n' + definitionSubstring + ' = ' + varName
-    } else if (definitionSubstring.trim() === 'exports') {
-      if (file.charAt(startDefinition) === '.') {
-        toRemove = 'module.' + toRemove
-      }
-
-      toAdd = 'import { ' + varName + ' } from ' + path + '\nexport default ' + varName
-    } else if (file.substring(startDefinition - 6, endDefinition).includes('export ')) {
-      definitionSubstring = deleteDefinitionVar(definitionSubstring)
-
-      toRemove = 'export ' + toRemove
-      toAdd = 'import { ' + varName + ' as ' + definitionSubstring + ' } from ' + path + '\nexport const ' + definitionSubstring + ' = ' + definitionSubstring
-    } else {
-      definitionSubstring = deleteDefinitionVar(definitionSubstring)
-
-      toAdd = 'import { ' + varName + ' as ' + definitionSubstring + ' } from ' + path
-    }
+  if (file.charAt(endPath + 2) === '.') {
+    return replaceNamedImportCJ(file, definitionSubstring, path, endPath)
   } else {
-    if (file.substring(startDefinition - 6, endDefinition).includes('export ')) {
-      definitionSubstring = file.substring(startDefinition - 6, endDefinition)
-    }
-
-    toRemove = definitionSubstring + caseString + path + ')'
-
-    if (definitionSubstring.trim() === 'exports') {
-      if (file.charAt(startDefinition) === '.') {
-        toRemove = 'module.' + toRemove
-      }
-
-      toAdd = 'import defaultValue from ' + path + '\nexport default defaultValue'
-    } else {
-      definitionSubstring = deleteDefinitionVar(definitionSubstring)
-
-      toAdd = 'import ' + definitionSubstring + ' from ' + path
-
-      if (file.substring(startDefinition - 6, endDefinition).includes('export ')) {
-        toAdd = toAdd + '\nexport const ' + definitionSubstring + ' = ' + definitionSubstring
-      }
-    }
+    return replaceImportCJ(file, definitionSubstring, path)
   }
-  toAdd = toAdd.replaceAll(':', ' as ')
+}
+
+const replaceImportCJ = (file, varDefinition, path) => {
+  let definitionSubstring = varDefinition
+
+  if (definitionSubstring.includes('exports')) {
+    return replaceExportImportCJ(file, definitionSubstring, path)
+  }
+
+  const toRemove = definitionSubstring + ' = require(' + path + ')'
+
+  definitionSubstring = deleteDefinitionVar(definitionSubstring)
+
+  const toAdd = 'import ' + definitionSubstring + ' from ' + path
 
   return file.replace(toRemove, toAdd)
+}
+
+const replaceNamedImportCJ = (file, varDefinition, path, endPath) => {
+  let definitionSubstring = varDefinition
+  const startVar = endPath + 2
+  let endVar = endPath + 2
+  let varName = ''
+
+  while (file.charAt(endVar) !== ' ' && file.charAt(endVar) !== '\n' && file.charAt(endVar) !== '') {
+    endVar++
+  }
+
+  varName = file.substring(startVar + 1, endVar)
+
+  if (varDefinition.includes('exports')) {
+    return replaceExportNamedImportCJ(file, varDefinition, startVar, path, varName)
+  } else if (varDefinition.includes('{')) {
+    return replaceObjNamedImportCJ(file, varDefinition, path, varName.replaceAll('\n', '').replaceAll('\r', ''))
+  }
+
+  const toRemove = definitionSubstring + ' = require(' + path + ').' + varName
+
+  definitionSubstring = deleteDefinitionVar(definitionSubstring)
+
+  const toAdd = 'import {' + definitionSubstring + ' as ' + varName.replaceAll('\n', '').replaceAll('\r', '') + ' } from ' + path
+
+  return file.replace(toRemove, toAdd)
+}
+
+const replaceObjNamedImportCJ = (file, varDefinition, path, varName) => {
+  const toRemove = varDefinition + ' = require(' + path + ').' + varName
+  const toAdd = 'import ' + varName + ' from ' + path + '\n' + varDefinition + ' = ' + varName
+
+  return file.replace(toRemove, toAdd)
+}
+
+const replaceExportNamedImportCJ = (file, varDefinition, startVar, path, varName) => {
+  return file.replace('require', 'req')
+}
+
+const replaceExportImportCJ = (file, varDefinition, path) => {
+  /* let definitionSubstring = varDefinition
+  let toRemove
+  let toAdd
+
+  if (file.charAt(file.indexOf(definitionSubstring) - 1) === '.') {
+    toRemove = 'module.' + definitionSubstring + ' = require(' + path + ')'
+    toAdd = 'export { default } from ' + path
+  } else if (definitionSubstring.includes('.')) {
+    toRemove = definitionSubstring + ' = require(' + path + ')'
+    definitionSubstring = definitionSubstring.replace('exports', '')
+    toAdd = 'export ' + definitionSubstring + ' from ' + path
+  } else {
+    toRemove = definitionSubstring + 's = require(' + path + ')'
+    toAdd = 'export ' + definitionSubstring + ' from ' + path
+  } */
+
+  return file.replace('require', 'req')
 }
