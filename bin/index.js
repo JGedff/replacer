@@ -11,7 +11,7 @@ const options = yargs.usage('This command will create a new folder that will con
   .option('p', { alias: 'path', describe: 'Route of the directory to transform (relative path) ', type: 'string', demandOption: true })
   .option('d', { alias: 'destiny', describe: 'Route where the folder created will be ', type: 'string', demandOption: false })
   .option('e', { alias: 'ecmascript', describe: 'Transform from ecmascript to commonjs ', type: 'boolean', demandOption: false })
-  .option('c', { alias: 'comments', describe: "Transform also comments\nIf you don't add this option, the comments will also modify, but not completly", type: 'boolean', demandOption: false })
+  .option('c', { alias: 'comments', describe: "Transform also comments (If you don't add this option, the comments will also modify, but not completly)", type: 'boolean', demandOption: false })
   .argv
 
 yargs.showHelpOnFail()

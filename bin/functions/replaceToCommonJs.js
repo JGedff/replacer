@@ -105,11 +105,9 @@ const defaultECReplace = (file) => {
 
 const noReplaceECComments = (file) => {
   let newElement = file
-  // const arrayIndexComments = getIndexToSkip(file, arrayOfECCases)
 
   arrayOfECCases.forEach(caseString => {
     while (newElement.indexOf(caseString) !== -1) {
-      // while (newElement.indexOf(caseString) !== -1 && checkNotIn(newElement.indexOf(caseString), arratIndexComments)) {
       const index = newElement.indexOf(caseString)
 
       if (isInsideComment(newElement, caseString, index)) {
