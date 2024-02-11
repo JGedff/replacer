@@ -1,7 +1,7 @@
 const { arrayOfECCases } = require('../contants/cases')
 const replacerFunctions = require('./replacer')
 const { fileReader } = require('./reader')
-const { checkECCases, addWhileNotFound, replaceDoubleSpaces } = require('./utils')
+const { checkECCases, addWhileNotFound, replaceDoubleSpaces, isInsideComment } = require('./utils')
 
 module.exports.getNewFilesCommonJs = (folderSystem, newFileSystem, moduleType = false) => {
   folderSystem.forEach((element) => {
@@ -12,6 +12,26 @@ module.exports.getNewFilesCommonJs = (folderSystem, newFileSystem, moduleType = 
 
       if (element.includes('.js') || element.includes('.jsx')) {
         fileText = this.processToCJFile(fileReader(element))
+      } else {
+        fileText = fileReader(element)
+      }
+
+      fileText = replaceDoubleSpaces(fileText)
+
+      newFileSystem.push(fileText)
+    }
+  })
+}
+
+module.exports.getNewFilesCommonJsNoComments = (folderSystem, newFileSystem, moduleType = false) => {
+  folderSystem.forEach((element) => {
+    if (typeof (element) === 'object') {
+      newFileSystem.push(replacerFunctions.getFilesReplacedNoComments(element, moduleType))
+    } else {
+      let fileText
+
+      if (element.includes('.js') || element.includes('.jsx')) {
+        fileText = this.processToCJFileNoComments(fileReader(element))
       } else {
         fileText = fileReader(element)
       }
@@ -38,7 +58,30 @@ module.exports.processToCJFile = (file) => {
   }
 }
 
-const replaceECString = (file) => {
+module.exports.processToCJFileNoComments = (file) => {
+  let newElement = file
+  const checkFile = checkECCases(file)
+
+  if (checkFile === 0) {
+    newElement = replaceECString(file, true)
+
+    return this.processToCJFileNoComments(newElement)
+  } else if (checkFile === 1) {
+    return newElement
+  } else {
+    return 'ERROR WHILE REPLACING TEXT'
+  }
+}
+
+const replaceECString = (file, comments = false) => {
+  if (comments) {
+    return noReplaceECComments(file)
+  } else {
+    return defaultECReplace(file)
+  }
+}
+
+const defaultECReplace = (file) => {
   let newElement = file
 
   arrayOfECCases.forEach(caseString => {
@@ -47,6 +90,33 @@ const replaceECString = (file) => {
 
       if (caseString === 'export default ') {
         newElement = file.replaceAll('export default ', 'module.exports = ')
+      } else if (caseString === 'export {' || newElement.substring(index, index + caseString.length + 1) === 'export {') {
+        newElement = replaceExportECObject(newElement, index)
+      } else if (caseString === 'export ') {
+        newElement = replaceExportECVar(newElement, index)
+      } else if (caseString === 'import ') {
+        newElement = replaceImportEC(newElement, index)
+      }
+    }
+  })
+
+  return newElement
+}
+
+const noReplaceECComments = (file) => {
+  let newElement = file
+  // const arrayIndexComments = getIndexToSkip(file, arrayOfECCases)
+
+  arrayOfECCases.forEach(caseString => {
+    while (newElement.indexOf(caseString) !== -1) {
+      // while (newElement.indexOf(caseString) !== -1 && checkNotIn(newElement.indexOf(caseString), arratIndexComments)) {
+      const index = newElement.indexOf(caseString)
+
+      if (isInsideComment(newElement, caseString, index)) {
+        const toAdd = caseString.substring(1, caseString.length)
+        newElement = newElement.replace(caseString, toAdd + ' ')
+      } else if (caseString === 'export default ') {
+        newElement = newElement.replace('export default ', 'module.exports = ')
       } else if (caseString === 'export {' || newElement.substring(index, index + caseString.length + 1) === 'export {') {
         newElement = replaceExportECObject(newElement, index)
       } else if (caseString === 'export ') {

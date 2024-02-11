@@ -98,3 +98,53 @@ module.exports.replaceDoubleSpaces = (file) => {
 
   return fileText
 }
+
+module.exports.isInsideComment = (file, caseString, index) => {
+  let startComment = index
+  let foundComment = false
+  let finalComment = false
+  let initComment = false
+  let lineComment = false
+  let endComment
+
+  while (!initComment && file.charAt(startComment) !== '') {
+    startComment--
+
+    if (file.charAt(startComment) === '/' && file.charAt(startComment - 1) === '/') {
+      initComment = true
+      lineComment = true
+    } else if (file.charAt(startComment) === '*' && file.charAt(startComment - 1) === '/') {
+      initComment = true
+    }
+  }
+
+  endComment = startComment
+
+  if (lineComment) {
+    while (!finalComment) {
+      endComment++
+
+      if (file.charAt(endComment) === '\n') {
+        finalComment = true
+      } else if (file.charAt(endComment) === '') {
+        break
+      }
+    }
+  } else {
+    while (!finalComment) {
+      endComment++
+
+      if (file.charAt(endComment) === '*' && file.charAt(endComment + 1) === '/') {
+        finalComment = true
+      } else if (file.charAt(endComment) === '') {
+        break
+      }
+    }
+  }
+
+  if (finalComment && file.substring(startComment, endComment).includes(caseString)) {
+    foundComment = true
+  }
+
+  return foundComment
+}

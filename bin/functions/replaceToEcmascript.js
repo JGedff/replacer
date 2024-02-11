@@ -1,4 +1,4 @@
-const { checkCJCases, addWhileNotFound, replaceDoubleSpaces, checkDefinitionCases, deleteDefinitionVar } = require('./utils')
+const { checkCJCases, addWhileNotFound, replaceDoubleSpaces, checkDefinitionCases, deleteDefinitionVar, isInsideComment } = require('./utils')
 const { arrayOfCJCases } = require('../contants/cases')
 const replacerFunctions = require('./replacer')
 const { fileReader } = require('./reader')
@@ -12,6 +12,26 @@ module.exports.getNewFilesEcmascript = (folderSystem, newFileSystem) => {
 
       if (element.includes('.js') || element.includes('.jsx')) {
         fileText = this.processToECFile(fileReader(element))
+      } else {
+        fileText = fileReader(element)
+      }
+
+      fileText = replaceDoubleSpaces(fileText)
+
+      newFileSystem.push(fileText)
+    }
+  })
+}
+
+module.exports.getNewFilesEcmascriptNoComments = (folderSystem, newFileSystem) => {
+  folderSystem.forEach((element) => {
+    if (typeof (element) === 'object') {
+      newFileSystem.push(replacerFunctions.getFilesReplacedNoComments(element))
+    } else {
+      let fileText
+
+      if (element.includes('.js') || element.includes('.jsx')) {
+        fileText = this.processToECFileNoComments(fileReader(element))
       } else {
         fileText = fileReader(element)
       }
@@ -38,7 +58,30 @@ module.exports.processToECFile = (file) => {
   }
 }
 
-const replaceCJString = (file) => {
+module.exports.processToECFileNoComments = (file) => {
+  let newElement = file
+  const checkFile = checkCJCases(file)
+
+  if (checkFile === 0) {
+    newElement = replaceCJString(file, true)
+
+    return this.processToECFileNoComments(newElement)
+  } else if (checkFile === 1) {
+    return newElement
+  } else {
+    return 'ERROR WHILE REPLACING TEXT'
+  }
+}
+
+const replaceCJString = (file, comments = false) => {
+  if (comments) {
+    return noReplaceCJComments(file)
+  } else {
+    return defaultCJReplace(file)
+  }
+}
+
+const defaultCJReplace = (file) => {
   let newElement = file
 
   arrayOfCJCases.forEach(caseString => {
@@ -46,6 +89,35 @@ const replaceCJString = (file) => {
       const index = newElement.indexOf(caseString)
 
       if (caseString.includes('require')) {
+        newElement = replaceImportVariableCJ(index, newElement)
+      } else if (caseString === 'module.exports.' || caseString === 'exports.') {
+        newElement = newElement.replaceAll('module.exports.', 'export const ').replaceAll('exports.', 'export const ')
+      } else if (caseString === 'module.exports = {' || caseString === 'exports = {') {
+        newElement = replaceExportObjCJ(newElement, index)
+      } else if ((caseString === 'module.exports = ' || caseString === 'exports = ') &&
+        !(newElement.substring(index, index + caseString.length + 1) === 'exports = {' ||
+        newElement.substring(index, index + caseString.length + 1) === 'module.exports = {')) {
+        newElement = newElement.replaceAll(caseString, 'export default ')
+      }
+    }
+  })
+
+  return newElement
+}
+
+const noReplaceCJComments = (file) => {
+  let newElement = file
+  // const arrayIndexComments = getIndexToSkip(file, arrayOfCJCases)
+
+  arrayOfCJCases.forEach(caseString => {
+    while (newElement.indexOf(caseString) !== -1) {
+      // while (newElement.indexOf(caseString) !== -1 && checkNotIn(newElement.indexOf(caseString), arratIndexComments)) {
+      const index = newElement.indexOf(caseString)
+
+      if (isInsideComment(newElement, caseString, index)) {
+        const toAdd = caseString.substring(0, caseString.length - 6)
+        newElement = newElement.replace(caseString, toAdd + ' ')
+      } else if (caseString === ' = require(') {
         newElement = replaceImportVariableCJ(index, newElement)
       } else if (caseString === 'module.exports.' || caseString === 'exports.') {
         newElement = newElement.replaceAll('module.exports.', 'export const ').replaceAll('exports.', 'export const ')
