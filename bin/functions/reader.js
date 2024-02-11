@@ -1,6 +1,6 @@
 const fs = require('fs-extra')
 
-exports.readDir = (path) => {
+module.exports.readDir = (path) => {
   const everything = []
   const arrayFiles = fs.readdirSync(path, { withFileTypes: 'false' })
 
@@ -15,7 +15,7 @@ exports.readDir = (path) => {
   return everything
 }
 
-exports.fileReader = (path) => {
+module.exports.fileReader = (path) => {
   const file = fs.readFileSync(path, { encoding: 'utf-8' })
 
   return file

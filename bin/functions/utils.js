@@ -2,14 +2,13 @@ const { arrayOfCJCases, arrayOfCJWrongCases, arrayOfECCases } = require('../cont
 const { arrayVarDefinitions } = require('../contants/variableDefiners')
 
 module.exports.checkCJCases = (element) => {
+  let found = false
   let value
 
   arrayOfCJWrongCases.forEach(wrongCase => {
     if (element.includes(wrongCase)) {
       value = 2
-    } else {
-      let found = false
-
+    } else if (value !== 2) {
       arrayOfCJCases.forEach(caseString => {
         if (element.includes(caseString)) {
           value = 0
@@ -27,16 +26,39 @@ module.exports.checkCJCases = (element) => {
 }
 
 module.exports.checkECCases = (element) => {
+  let found = false
   let value
 
   arrayOfCJWrongCases.forEach(wrongCase => {
     if (element.includes(wrongCase)) {
       value = 2
-    } else {
-      let found = false
-
+    } else if (value !== 2) {
       arrayOfECCases.forEach(caseString => {
         if (element.includes(caseString)) {
+          value = 0
+          found = true
+        }
+      })
+
+      if (!found) {
+        value = 1
+      }
+    }
+  })
+
+  return value
+}
+
+module.exports.checkCustomCases = (element, arrayCases, arrayWrongCases) => {
+  let found = false
+  let value
+
+  arrayWrongCases.forEach(wrongCase => {
+    if (element.includes(wrongCase)) {
+      value = 2
+    } else if (value !== 2) {
+      arrayCases.forEach(objCase => {
+        if (element.includes(objCase.from)) {
           value = 0
           found = true
         }

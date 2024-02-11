@@ -1,3 +1,5 @@
+const { exit } = require('yargs')
+
 const { checkCJCases, addWhileNotFound, replaceDoubleSpaces, checkDefinitionCases, deleteDefinitionVar, isInsideComment } = require('./utils')
 const { arrayOfCJCases } = require('../contants/cases')
 const replacerFunctions = require('./replacer')
@@ -53,8 +55,10 @@ module.exports.processToECFile = (file) => {
     return this.processToECFile(newElement)
   } else if (checkFile === 1) {
     return newElement
+  } else if (checkFile === 2) {
+    exit(422, new Error('The program has stopped.\nA dangerous case has been detected'))
   } else {
-    return 'ERROR WHILE REPLACING TEXT'
+    exit(500, new Error('There was a problem when checking the cases to process or dangerous cases'))
   }
 }
 

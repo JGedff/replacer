@@ -3,8 +3,9 @@
 const yargs = require('yargs')
 const fs = require('fs-extra')
 
-const writter = require('./functions/writter').default
 const { replacer, replacerNoComments } = require('./functions/replacer')
+const { customReplacer } = require('./functions/customReplaces')
+const writter = require('./functions/writter').default
 const { readDir } = require('./functions/reader')
 
 const options = yargs.usage('This command will create a new folder that will contain the path specified files\nThis folder will change some lines in JavaScript files (including comments)\n\nIt will change the lines that:\nUse: CommonJs (module.exports / require("path"))\nTo: Ecmascript (export / import)\n\nUsage: -p <path>')
@@ -12,7 +13,12 @@ const options = yargs.usage('This command will create a new folder that will con
   .option('d', { alias: 'destiny', describe: 'Route where the folder created will be ', type: 'string', demandOption: false })
   .option('e', { alias: 'ecmascript', describe: 'Transform from ecmascript to commonjs ', type: 'boolean', demandOption: false })
   .option('c', { alias: 'comments', describe: "Transform also comments (If you don't add this option, the comments will also modify, but not completly)", type: 'boolean', demandOption: false })
+  .option('r', { alias: 'custom_replace', describe: 'Transform the files using another file to say what should change. The syntax is indicated in the -s option', type: 'string', demandOption: false })
+  .option('s', { alias: 'custom_syntax', describe: 'Syntax of the file proporcionated to do a custom replace', type: 'boolean', demandOption: false })
   .argv
+
+// CHECK IF CUSTOM REPLACE WORKS
+// DO AUTOMATIC TRADUCTION WITH API
 
 yargs.showHelpOnFail()
 
@@ -22,7 +28,9 @@ if (fs.lstatSync(options.p).isDirectory()) {
   fileSystem = readDir(options.p)
 }
 
-if (options.c) {
+if (options.r) {
+  writter(customReplacer(options.p, options.r), fileSystem, options.d)
+} else if (options.c) {
   if (options.e) {
     writter(replacer(options.p, options.e), fileSystem, options.d)
   } else {

@@ -2,6 +2,7 @@ const fs = require('fs-extra')
 
 const { getNewFilesEcmascript, processToECFile, processToECFileNoComments, getNewFilesEcmascriptNoComments } = require('./replaceToEcmascript')
 const { getNewFilesCommonJs, processToCJFile, processToCJFileNoComments, getNewFilesCommonJsNoComments } = require('./replaceToCommonJs')
+const { prepareCustomCases, porcessCustomFile, getFilesCustomReplaced } = require('./customReplaces')
 const { readDir, fileReader } = require('./reader')
 const { replaceDoubleSpaces } = require('./utils')
 
@@ -25,6 +26,25 @@ module.exports.replacer = (path, moduleType = false) => {
       newFile = processToECFile(fileText)
       return replaceDoubleSpaces(newFile)
     }
+  }
+}
+
+module.exports.customReplacer = (path, ruleFile) => {
+  let folderSystem
+
+  prepareCustomCases(ruleFile)
+
+  if (fs.lstatSync(path).isDirectory()) {
+    folderSystem = readDir(path)
+
+    const newFileSystem = getFilesCustomReplaced(folderSystem)
+
+    return newFileSystem
+  } else {
+    const fileText = fileReader(path)
+    const newFile = porcessCustomFile(fileText)
+
+    return replaceDoubleSpaces(newFile)
   }
 }
 
