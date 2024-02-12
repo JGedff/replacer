@@ -35,23 +35,27 @@ module.exports.porcessCustomFile = (file) => {
   } else if (checkFile === 1) {
     return newElement
   } else if (checkFile === 2) {
+    console.error('The program has stopped.\nA dangerous case has been detected')
     exit(422, new Error('The program has stopped.\nA dangerous case has been detected'))
   } else {
+    console.error('There was a problem when checking the cases to process or dangerous cases')
     exit(500, new Error('There was a problem when checking the cases to process or dangerous cases'))
   }
 }
 
 module.exports.prepareCustomCases = (ruleFile) => {
-  const cases = ruleFile.split('\n')
+  const file = fileReader(ruleFile)
+  const cases = file.split('\n')
 
   cases.forEach((newCase) => {
     const obj = newCase.split('*')
 
     if (obj[1] !== undefined) {
-      arrayCustomCases.push({ from: obj[0], to: obj[1] })
+      arrayCustomCases.push({ from: obj[0].replaceAll('\n', '').replaceAll('\r', ''), to: obj[1].replaceAll('\n', '').replaceAll('\r', '') })
     } else if (newCase.startsWith('!')) {
-      arrayCustomWrongCases.push(newCase)
+      arrayCustomWrongCases.push(newCase.substring(1))
     } else {
+      console.error('The syntax of the custom file is not correct. Please, check the file')
       exit(400, new Error('The syntax of the custom file is not correct. Please, check the file'))
     }
   })

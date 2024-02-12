@@ -3,7 +3,7 @@ const fs = require('fs-extra')
 const fileDirSystem = []
 
 let directoryCreated = false
-let globalSelectedPath
+let globalSelectedPath = './result'
 
 const writter = (array, fileSystem, selectedPath) => {
   generatePathDirectory(fileSystem, selectedPath)
@@ -12,10 +12,12 @@ const writter = (array, fileSystem, selectedPath) => {
 }
 
 const generatePathDirectory = (fileSystem, selectedPath) => {
-  if (!directoryCreated) {
-    selectedPath ? globalSelectedPath = selectedPath : globalSelectedPath = './result'
+  if (!directoryCreated && fileSystem.length > 1) {
+    if (selectedPath) {
+      globalSelectedPath = selectedPath
+    }
 
-    console.log('The files will be on the folder: ' + globalSelectedPath)
+    console.log('The transformed files will be on the folder: ' + globalSelectedPath)
 
     getAllDirs(fileSystem)
 
@@ -28,6 +30,9 @@ const generatePathDirectory = (fileSystem, selectedPath) => {
     }
 
     directoryCreated = !directoryCreated
+  } else {
+    console.log('The transformed file will be on the folder: ' + globalSelectedPath)
+    fs.mkdirSync(globalSelectedPath, { recursive: true })
   }
 }
 

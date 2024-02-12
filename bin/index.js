@@ -3,10 +3,10 @@
 const yargs = require('yargs')
 const fs = require('fs-extra')
 
-const { replacer, replacerNoComments } = require('./functions/replacer')
-const { customReplacer } = require('./functions/customReplaces')
+const { replacer, replacerNoComments, customReplacer } = require('./functions/replacer')
 const writter = require('./functions/writter').default
-const { readDir } = require('./functions/reader')
+const { readDir, fileReader } = require('./functions/reader')
+const { showRules } = require('./rules/showRules')
 
 const options = yargs.usage('This command will create a new folder that will contain the path specified files\nThis folder will change some lines in JavaScript files (including comments)\n\nIt will change the lines that:\nUse: CommonJs (module.exports / require("path"))\nTo: Ecmascript (export / import)\n\nUsage: -p <path>')
   .option('p', { alias: 'path', describe: 'Route of the directory to transform (relative path) ', type: 'string', demandOption: true })
@@ -17,10 +17,15 @@ const options = yargs.usage('This command will create a new folder that will con
   .option('s', { alias: 'custom_syntax', describe: 'Syntax of the file proporcionated to do a custom replace', type: 'boolean', demandOption: false })
   .argv
 
-// CHECK IF CUSTOM REPLACE WORKS
-// DO AUTOMATIC TRADUCTION WITH API
+// DO README
+// CONSOLE LOG WITH COLORS
+// DO AUTOMATIC TRADUCTION WITH API FOR CONSOLE LOGS
 
 yargs.showHelpOnFail()
+
+if (options.s) {
+  showRules()
+}
 
 let fileSystem = [options.p]
 
@@ -28,7 +33,7 @@ if (fs.lstatSync(options.p).isDirectory()) {
   fileSystem = readDir(options.p)
 }
 
-if (options.r) {
+if (options.r !== undefined) {
   writter(customReplacer(options.p, options.r), fileSystem, options.d)
 } else if (options.c) {
   if (options.e) {

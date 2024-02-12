@@ -51,24 +51,37 @@ module.exports.checkECCases = (element) => {
 
 module.exports.checkCustomCases = (element, arrayCases, arrayWrongCases) => {
   let found = false
-  let value
+  let value = 2
 
-  arrayWrongCases.forEach(wrongCase => {
-    if (element.includes(wrongCase)) {
-      value = 2
-    } else if (value !== 2) {
-      arrayCases.forEach(objCase => {
-        if (element.includes(objCase.from)) {
-          value = 0
-          found = true
+  if (arrayWrongCases.length > 0) {
+    arrayWrongCases.forEach(wrongCase => {
+      if (element.includes(wrongCase)) {
+        value = 2
+      } else if (value !== 2) {
+        arrayCases.forEach(objCase => {
+          if (element.includes(objCase.from)) {
+            value = 0
+            found = true
+          }
+        })
+
+        if (!found) {
+          value = 1
         }
-      })
-
-      if (!found) {
-        value = 1
       }
+    })
+  } else {
+    arrayCases.forEach(objCase => {
+      if (element.includes(objCase.from)) {
+        value = 0
+        found = true
+      }
+    })
+
+    if (!found) {
+      value = 1
     }
-  })
+  }
 
   return value
 }
