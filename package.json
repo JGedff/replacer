@@ -5,6 +5,12 @@
   "repository": "https://github.com/JGedff/replacer.git",
   "author": "JGedff <jordimarmi1@gmail.com>",
   "license": "MIT",
+  "bin": {
+    "replacer": "bin/index.js"
+  },
+  "keywords": [
+    "replacer"
+  ],
   "scripts": {
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
   },

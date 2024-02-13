@@ -4,6 +4,8 @@
 
 - [What is this?](#what-is-this)
 - [Why?](#why)
+- [How to install it?](#how-to-install-it)
+- [How to uninstall it?](#how-to-uninstall-it)
 - [Usage](#usage)
 - [Options](#options)
 - [Custom replace rules](#custom-replace-rules)
@@ -35,6 +37,18 @@ Have you ever been in a situation where you **confused some words** by writing t
 Also, has it ever happened to you that **you made a change, but then regretted it**?
 
 Well, this command **will make this changes for you**, **and will also keep the original version**. So you will be able to **use the original without having to edit again the files**.
+
+## How to install it?
+
+You can install it using the next command:
+
+    npm install @jgedff/replacer -g
+
+## How to uninstall it?
+
+You can uninstall using the next command:
+
+    npm uninstall @jgedff/replacer -g
 
 ## Usage
 
