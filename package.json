@@ -1,5 +1,5 @@
 {
-  "name": "replacer",
+  "name": "@jgedff/replacer",
   "version": "2.0.0",
   "main": "./bin/index.js",
   "repository": "https://github.com/JGedff/replacer.git",
