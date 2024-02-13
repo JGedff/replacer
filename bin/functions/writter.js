@@ -17,8 +17,6 @@ const generatePathDirectory = (fileSystem, selectedPath) => {
       globalSelectedPath = selectedPath
     }
 
-    console.log('The transformed files will be on the folder: ' + globalSelectedPath)
-
     getAllDirs(fileSystem)
 
     for (let i = 0; i < fileDirSystem.length; i++) {
@@ -31,7 +29,6 @@ const generatePathDirectory = (fileSystem, selectedPath) => {
 
     directoryCreated = !directoryCreated
   } else {
-    console.log('The transformed file will be on the folder: ' + globalSelectedPath)
     fs.mkdirSync(globalSelectedPath, { recursive: true })
   }
 }
