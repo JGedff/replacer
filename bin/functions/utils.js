@@ -1,5 +1,9 @@
+const { writeFileSync } = require('fs-extra')
 const { arrayOfCJCases, arrayOfCJWrongCases, arrayOfECCases } = require('../contants/cases')
 const { arrayVarDefinitions } = require('../contants/variableDefiners')
+const { fileReader } = require('./reader')
+
+let pathJson = ''
 
 module.exports.checkCJCases = (element) => {
   let found = false
@@ -182,4 +186,38 @@ module.exports.isInsideComment = (file, caseString, index) => {
   }
 
   return foundComment
+}
+
+module.exports.findJsonPath = (fileSystem) => {
+  let packagePath = ''
+
+  fileSystem.forEach(element => {
+    if (typeof (element) === 'object' && !packagePath.includes('package.json')) {
+      packagePath = this.findJsonIn(element)
+    } else if (!packagePath.includes('package.json')) {
+      if (element.includes('package.json')) {
+        packagePath = element
+        pathJson = element
+      }
+    }
+  })
+
+  return packagePath
+}
+
+module.exports.changeJson = (fileSystem, ecmascript) => {
+  const json = fileReader(this.findJsonPath(fileSystem))
+  let newJson = ''
+
+  if (ecmascript) {
+    newJson = json.replace('"type": "module",\n', '')
+  } else if (json.toLowerCase().includes('"type": "commonjs",')) {
+    newJson = json.replace('"type": "commonjs",', '"type": "module",')
+  } else {
+    newJson = json.replace('"version', '"type": "module",\n"version')
+  }
+
+  if (newJson !== '') {
+    writeFileSync(pathJson, newJson)
+  }
 }

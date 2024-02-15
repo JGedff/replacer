@@ -106,3 +106,4 @@ If it does not tells another option, it will try to replace the CommonJs syntax 
 
 - [yargs](https://www.npmjs.com/package/yargs) - Used to create the command
 - [fs-extra](https://www.npmjs.com/package/fs-extra) - Used to read and write
+- [chalk](https://www.npmjs.com/package/chalk) - Used to do the console log with colors

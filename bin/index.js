@@ -2,11 +2,13 @@
 
 const yargs = require('yargs')
 const fs = require('fs-extra')
+const chalk = require('chalk')
 
 const { replacer, replacerNoComments, customReplacer } = require('./functions/replacer')
 const writter = require('./functions/writter').default
 const { readDir } = require('./functions/reader')
 const { showRules } = require('./customReplaceRules/showRules')
+const { changeJson } = require('./functions/utils')
 
 const options = yargs.usage('This command will create a new folder that will contain a transformation of the files from the specified path\nThis folder will change some lines in the JavaScript files (including comments)\n\nIt will change the lines that:\nUse: CommonJs (module.exports / require("path"))\nTo: Ecmascript (export / import)\n\nIt does not work on parent folders from where it is executed\n\nUsage: -p <path>')
   .option('p', { alias: 'path', describe: 'Route of the directory to transform (relative path)', type: 'string', demandOption: true })
@@ -48,7 +50,9 @@ if (options.r) {
 }
 
 if (options.d) {
-  console.log('\x1b[1m', 'The transformed files will be on the folder: ' + options.d, '\x1b[0m')
+  console.log(chalk.bold('The transformed files will be on the folder: ' + options.d))
 } else {
-  console.log('\x1b[1m', 'The transformed files will be on the folder: ./result', '\x1b[0m')
+  console.log(chalk.bold('The transformed files will be on the folder: ./result'))
 }
+
+changeJson(fileSystem, options.e)

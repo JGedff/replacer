@@ -1,4 +1,5 @@
 const { exit } = require('yargs')
+const chalk = require('chalk')
 
 const { checkCJCases, addWhileNotFound, replaceDoubleSpaces, checkDefinitionCases, deleteDefinitionVar, isInsideComment } = require('./utils')
 const { arrayOfCJCases } = require('../contants/cases')
@@ -56,10 +57,10 @@ module.exports.processToECFile = (file) => {
   } else if (checkFile === 1) {
     return newElement
   } else if (checkFile === 2) {
-    console.error('\x1b[31m', 'The program has stopped.\nA dangerous case has been detected', '\x1b[0m')
+    console.error(chalk.red('The program has stopped.\nA dangerous case has been detected'))
     exit(422, new Error('The program has stopped.\nA dangerous case has been detected'))
   } else {
-    console.error('\x1b[31m', 'There was a problem when checking the cases to process or dangerous cases', '\x1b[0m')
+    console.error(chalk.red('There was a problem when checking the cases to process or dangerous cases'))
     exit(500, new Error('There was a problem when checking the cases to process or dangerous cases'))
   }
 }
