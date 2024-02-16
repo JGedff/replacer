@@ -49,10 +49,10 @@ if (options.r) {
   }
 }
 
+changeJson(fileSystem, options.e)
+
 if (options.d) {
   console.log(chalk.bold('The transformed files will be on the folder: ' + options.d))
 } else {
   console.log(chalk.bold('The transformed files will be on the folder: ./result'))
 }
-
-changeJson(fileSystem, options.e)
