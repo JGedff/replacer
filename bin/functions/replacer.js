@@ -75,9 +75,11 @@ module.exports.replacerNoComments = (path, moduleType = false) => {
 
     if (moduleType) {
       newFile = processToCJFileNoComments(fileText)
+
       return replaceDoubleSpaces(newFile)
     } else {
       newFile = processToECFileNoComments(fileText)
+
       return replaceDoubleSpaces(newFile)
     }
   }

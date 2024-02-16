@@ -9,7 +9,11 @@
     "replacer": "bin/index.js"
   },
   "keywords": [
-    "replacer"
+    "replacer",
+    "js",
+    "commonjs",
+    "ecmascript",
+    "custom"
   ],
   "scripts": {
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"

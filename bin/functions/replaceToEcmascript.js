@@ -173,33 +173,34 @@ const replaceExportObjCJ = (file, index) => {
 }
 
 const replaceImportVariableCJ = (index, file) => {
+  const newFile = file
   let definitionSubstring = ''
   let startPath = index
   let startDefinition = index
   let endPath
 
-  while (file.charAt(startPath) !== "'" && file.charAt(startPath) !== '"') {
+  while (newFile.charAt(startPath) !== "'" && newFile.charAt(startPath) !== '"') {
     startPath++
   }
 
   endPath = startPath + 1
 
-  while (file.charAt(endPath) !== "'" && file.charAt(endPath) !== '"') {
+  while (newFile.charAt(endPath) !== "'" && newFile.charAt(endPath) !== '"') {
     endPath++
   }
 
   while (!checkDefinitionCases(definitionSubstring)) {
-    definitionSubstring = file.substring(startDefinition, index)
+    definitionSubstring = newFile.substring(startDefinition, index)
 
     startDefinition--
   }
 
-  const path = file.substring(startPath, endPath + 1)
+  const path = newFile.substring(startPath, endPath + 1)
 
-  if (file.charAt(endPath + 2) === '.') {
-    return replaceNamedImportCJ(file, definitionSubstring, path, endPath)
+  if (newFile.charAt(endPath + 2) === '.') {
+    return replaceNamedImportCJ(newFile, definitionSubstring, path, endPath)
   } else {
-    return replaceImportCJ(file, definitionSubstring, path)
+    return replaceImportCJ(newFile, definitionSubstring, path)
   }
 }
 
